@@ -1,6 +1,7 @@
 module Supabot
   #IRC Connector
-  class Irc < BaseConnector
+  class Irc
+    include Connector
     
   end
 end
