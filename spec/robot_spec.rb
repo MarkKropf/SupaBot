@@ -7,7 +7,14 @@ describe Supabot::Robot do
   it 'does a thing' do
     a = Supabot::Robot.new( [
      # { :path => "connectors/test2.rb", :name => "Test2Connector" },
-      { :path => "supabot/connectors/test.rb", :name => "TestConnector" }
+      { :path => "supabot/connectors/irc.rb", 
+        :name => "Irc",
+        :opts => {:host => '127.0.0.1', :port => "6667", :channels => ['#test'] }
+      }, 
+      # { :path => "supabot/connectors/shell.rb", 
+      #   :name => "Shell",
+      #   :opts => {:host => '127.0.0.1', :port => "6667", :channels => ['#test'] }
+      # }         
     ])
     a.run
     

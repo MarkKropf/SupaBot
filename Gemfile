@@ -2,7 +2,7 @@
 source 'https://rubygems.org'
 
 gem 'eventmachine'
-gem 'twitter'
+gem 'em-irc'
 
 group :test, :development do
   gem 'rake'
