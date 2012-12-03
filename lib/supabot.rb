@@ -10,7 +10,7 @@ require 'supabot/response'
 module Supabot
   class Robot
 
-    attr_reader :name
+    attr_reader :name, :logger
 
     def initialize(connectors, name='Cher', logger=nil)
       @name         = name
