@@ -1,9 +1,11 @@
 require 'logger'
 require 'eventmachine'
+require 'supabot/version'
 require 'supabot/connector'
 require 'supabot/botlet'
 require 'supabot/listener'
 require 'supabot/response'
+
 
 module Supabot
   class Robot
