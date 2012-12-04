@@ -1,7 +1,7 @@
 module Supabot
   class Response
     
-    attr_accessor :message, :text
+    attr_accessor :message, :text, :match
     
     def initialize(robot, message, match)
       @robot   = robot
