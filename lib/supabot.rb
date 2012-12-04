@@ -51,6 +51,28 @@ module Supabot
       @listeners.push TextListener.new(self, regex, callback) 
     end
     
+    def respond(regex, &callback)
+       re = regex.inspect.split('/')
+       re.shift           # remove empty first item
+       re.pop # pop off modifiers
+
+       if re[0] and re[0][0] == '^'
+         @logger.warning "Anchors don't work well with respond, perhaps you want to use 'hear'"
+         @logger.warning "The regex in question was #{regex.toString()}"
+       end
+
+       pattern = re.join('/') # combine the pattern back again
+
+       # if @alias
+       #   alias = @alias.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') # escape alias for regexp
+       #   newRegex = new RegExp("^(?:#{alias}[:,]?|#{@name}[:,]?)\\s*(?:#{pattern})", modifiers)
+       # else 
+       newRegex = Regexp.new("^#{@name}[:,]?\\s*(?:#{pattern})", regex.options)
+
+       @logger.debug newRegex.to_s
+       @listeners.push TextListener.new(self, newRegex, callback)
+    end
+    
     
     private
 
