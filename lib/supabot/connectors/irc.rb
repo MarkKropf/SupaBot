@@ -5,14 +5,6 @@ module Supabot
     include Connector
 
     def run 
-      @robot.hear /^#{@robot.name}/i do |response|
-        require 'ostruct'
-        o = OpenStruct.new
-        o.target = @opts[:channels].first
-        o.text = 'What?'
-        send o
-      end
-
       @client = EventMachine::IRC::Client.new do |c|
         c.host @opts[:host]
         c.port @opts[:port]
@@ -28,25 +20,29 @@ module Supabot
         end
 
         c.on :message do |source, target, message|
+          message = IrcTextMessage.new(message, source, self, target)
           receive message
         end
       end
       @client.connect      
     end
 
-    def send message                               
-      if message.respond_to?(:target)
-        puts 'here'
-        @client.message message.target, message.text 
-      else
-        message.lines do |line|
-          @client.message '#test', line
-        end
-      end
-      
+    def send(response)
+      response.text.lines do |line|
+        @client.message response.message.send_to, line
+      end      
     end
-
-
+    
+    private
+    
+    class IrcTextMessage < TextMessage
+      attr_accessor :send_to
+      
+      def initialize(text, user, connector, target)
+        super text, user, connector
+        @send_to = target.start_with?('#') ? target : user 
+      end
+    end
 
   end
 end

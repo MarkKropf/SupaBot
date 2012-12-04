@@ -2,8 +2,8 @@ module Supabot
   class Shell
     include Connector
 
-    def send message
-      puts "#{@robot.name}> #{message}"
+    def send(response)
+      puts "#{@robot.name}> #{response.text}"
     end
 
     def run
@@ -12,8 +12,8 @@ module Supabot
               
       print ">"
 
-      cb = Proc.new do |msg|
-        receive msg
+      cb = Proc.new do |msg|        
+        receive TextMessage.new(msg, 'shell', self)
         print ">"
         q.pop &cb
       end

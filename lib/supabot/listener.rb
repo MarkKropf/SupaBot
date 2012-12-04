@@ -2,7 +2,9 @@ module Supabot
 
   module Listener
     def call(message)
-      @callback.call Response.new(@robot, message) if listen_to? message
+      if match = @matcher.call(message)
+        @callback.call Response.new(@robot, message, match)
+      end
     end
   end
   
@@ -13,11 +15,9 @@ module Supabot
       @robot = robot
       @regex = regex
       @callback = callback
-    end                   
-    
-    def listen_to? message
-      @regex.match(message) ? true : false
-    end
+      
+      @matcher = lambda { |message| @regex.match(message.text) }
+    end                                                                         
   end
   
 end

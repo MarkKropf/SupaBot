@@ -5,6 +5,7 @@ require 'supabot/connector'
 require 'supabot/botlet'
 require 'supabot/listener'
 require 'supabot/response'
+require 'supabot/message'
 
 
 module Supabot
@@ -49,6 +50,7 @@ module Supabot
     def hear(regex, &callback)
       @listeners.push TextListener.new(self, regex, callback) 
     end
+    
     
     private
 
