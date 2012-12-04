@@ -28,9 +28,13 @@ module Supabot
     end
 
     def send(response)
-      response.text.lines do |line|
-        @client.message response.message.send_to, line
-      end      
+      if response.text.respond_to? :lines
+        response.text.lines do |line|
+          @client.message response.message.send_to, line
+        end                           
+      else
+        @client.message response.message.send_to, response.text  
+      end              
     end
     
     private
