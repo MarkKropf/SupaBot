@@ -9,8 +9,8 @@ module Supabot
     ].freeze
 
     def load
-      @robot.hear /(what are )?the (three |3 )?(rules|laws)/i do |message|
-        message.send RULES.join("\n")
+      @robot.hear /(what are )?the (three |3 )?(rules|laws)/i do |response|
+        response.send RULES.join("\n")
       end
     end
     
