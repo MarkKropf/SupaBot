@@ -21,11 +21,10 @@ module Supabot
             if l['rel'] == 'alternate' && l['type'] == 'text/html'
               response.send l['href'] 
             end
-          end
-                    
+          end                    
         end
       end
     end
-    
+        
   end
 end
