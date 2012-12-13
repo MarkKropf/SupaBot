@@ -18,7 +18,7 @@ module Supabot
       @connectors   = []
       @logger       = logger || Logger.new(STDOUT)
       @logger.level = Logger::DEBUG
-      @listeners    = []      
+      @listeners    = []
       @botlets      = []
 
       connectors.each { |c| load_connector(c[:path], c[:name], c[:opts]) }
@@ -31,7 +31,7 @@ module Supabot
         Signal.trap("TERM") { EventMachine.stop }
 
         @connectors.each { |c| c.run }
-      end                                        
+      end
     end
 
     def stop
@@ -39,7 +39,7 @@ module Supabot
       EventMachine.stop
     end
 
-    def receive(message)      
+    def receive(message)
       @listeners.each { |l| l.call message }
     end
 
@@ -48,9 +48,10 @@ module Supabot
     end
 
     def hear(regex, &callback)
-      @listeners.push TextListener.new(self, regex, callback) 
+      @logger.debug regex.to_s
+      @listeners.push TextListener.new(self, regex, callback)
     end
-    
+
     def respond(regex, &callback)
        re = regex.inspect.split('/')
        re.shift           # remove empty first item
@@ -66,14 +67,14 @@ module Supabot
        # if @alias
        #   alias = @alias.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') # escape alias for regexp
        #   newRegex = new RegExp("^(?:#{alias}[:,]?|#{@name}[:,]?)\\s*(?:#{pattern})", modifiers)
-       # else 
+       # else
        newRegex = Regexp.new("^#{@name}[:,]?\\s*(?:#{pattern})", regex.options)
 
        @logger.debug newRegex.to_s
        @listeners.push TextListener.new(self, newRegex, callback)
     end
-    
-    
+
+
     private
 
     def load_connector(connector_path, connector_name, opts={})
@@ -82,19 +83,19 @@ module Supabot
     rescue => err
       @logger.error "Failed to load #{connector_name} at #{connector_path} because: #{err.message}. Continuing anyways."
     end
-    
+
     def load_botlets(path="#{File.dirname(__FILE__)}/supabot/botlets/")
       Dir.foreach(File.absolute_path(path)) do |f|
         file = File.join(path, f)
         begin
-          existing_classes = ObjectSpace.each_object(Class).to_a            
+          existing_classes = ObjectSpace.each_object(Class).to_a
           require file
           new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
 
           new_classes.keep_if { |k| k.included_modules.include? Supabot::Botlet }.each do |klass|
             k = klass.new self
             k.load
-            @botlets << k          
+            @botlets << k
           end
         rescue => err
           @logger.error "Failed to load botlet #{file} because: #{err.message}. Continuing anyways."
