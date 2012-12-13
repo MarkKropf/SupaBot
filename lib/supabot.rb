@@ -13,7 +13,7 @@ module Supabot
 
     attr_reader :name, :logger
 
-    def initialize(connectors, name='Cher', logger=nil)
+    def initialize(connectors, name='MadisonRabbitt', logger=nil)
       @name         = name
       @connectors   = []
       @logger       = logger || Logger.new(STDOUT)
