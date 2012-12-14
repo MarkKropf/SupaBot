@@ -27,10 +27,6 @@ module Supabot
         resp = GREETING_RESPONSES.sample % [response.message.user]
         response.send resp
       end
-
-      @robot.respond /make me a pie/i do |response|
-        response.send "Yes dear. Your office mom can't wait to bake for you!"
-      end
     end
   end
 end
