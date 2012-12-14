@@ -19,7 +19,6 @@ module Supabot
       @logger       = logger || Logger.new(STDOUT)
       @logger.level = Logger::DEBUG
       @listeners    = []
-      @botlets      = []
 
       connectors.each { |c| load_connector(c[:path], c[:name], c[:opts]) }
       load_botlets
@@ -74,6 +73,27 @@ module Supabot
        @listeners.push TextListener.new(self, newRegex, callback)
     end
 
+    # Note: The ObjectSpace will continue to hold a 'memory' of old versions of botlet classes,
+    #       I don't believe it will have any real impact on memory usage
+    def reload
+      @listeners.clear
+
+      botlets = ObjectSpace.each_object(Class).to_a
+      botlets.select! { |klass| klass.included_modules.include? Supabot::Botlet }
+
+      botlets.each do |botlet|
+        names     = botlet.to_s.split('::')
+        to_remove = names.pop.to_sym
+
+        remove_from = names.inject(Object) do |parent, child|
+          parent.const_get(child.to_sym)
+        end
+
+        remove_from.instance_eval { remove_const to_remove if const_defined? to_remove }
+      end
+
+      load_botlets
+    end
 
     private
 
@@ -89,13 +109,12 @@ module Supabot
         file = File.join(path, f)
         begin
           existing_classes = ObjectSpace.each_object(Class).to_a
-          require file
+          load file
           new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
 
           new_classes.keep_if { |k| k.included_modules.include? Supabot::Botlet }.each do |klass|
             k = klass.new self
             k.load
-            @botlets << k
           end
         rescue => err
           @logger.error "Failed to load botlet #{file} because: #{err.message}. Continuing anyways."

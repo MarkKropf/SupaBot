@@ -18,6 +18,11 @@ module Supabot
         EM.next_tick { exit }
       end
 
+      @robot.response /reload$/i do |response|
+        @robot.reload
+        response.send "Locked and Reloaded."
+      end
+
       @robot.hear /^(hello|hi|hey)( .*#{@robot.name})/i do |response|
         resp = GREETING_RESPONSES.sample % [response.message.user]
         response.send resp
