@@ -18,7 +18,7 @@ module Supabot
         EM.next_tick { exit }
       end
 
-      @robot.response /reload$/i do |response|
+      @robot.respond /reload$/i do |response|
         @robot.reload
         response.send "Locked and Reloaded."
       end
