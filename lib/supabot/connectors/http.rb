@@ -12,8 +12,8 @@ module Supabot
     end
 
     def send(response)
-      response.message.http_response.status  = 200
       response.message.http_response.content_type 'text/plain'
+      response.message.http_response.status  = 200
       response.message.http_response.content = response.text
       response.message.http_response.send_response
     end
