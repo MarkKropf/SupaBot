@@ -7,14 +7,13 @@ require 'supabot/listener'
 require 'supabot/response'
 require 'supabot/message'
 
-
 module Supabot
   class Robot
 
     attr_reader :name, :logger
 
-    def initialize(connectors, name='MadisonRabbitt', logger=nil)
-      @name         = name
+    def initialize(connectors, name=nil, logger=nil)
+      @name         = name || 'Cher'
       @connectors   = []
       @logger       = logger || Logger.new(STDOUT)
       @logger.level = Logger::DEBUG
@@ -53,8 +52,8 @@ module Supabot
 
     def respond(regex, &callback)
        re = regex.inspect.split('/')
-       re.shift           # remove empty first item
-       re.pop # pop off modifiers
+       re.shift  # remove empty first item
+       re.pop    # pop off modifiers
 
        if re[0] and re[0][0] == '^'
          @logger.warning "Anchors don't work well with respond, perhaps you want to use 'hear'"

@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'rubygems'
+require 'optparse'
+require 'yaml'
+require 'supabot'
+
+module ConfigModule # just a namespace to shove the config stuff into
+
+  DEFAULT_CONNECTOR_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'supabot', 'connectors'))
+
+  def self.config
+    options = {}
+    options[:botlet_paths] = [File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'supabot', 'botlets'))]
+    options[:connectors]   = [{:name => 'Shell', :path => File.join(DEFAULT_CONNECTOR_PATH, 'shell.rb')}]
+
+    OptionParser.new do |opts|
+      opts.banner = "Usage: supabot [options]"
+      opts.separator ""
+
+      opts.on('-c', '--config FILE', 'Supabot config file.') do |file|
+        options[:config] = file
+      end
+
+      opts.on('-n', '--name NAME', "This supabot's name (default is Cher)") do |name|
+        options[:name] = name
+      end
+
+      opts.on('-b', '--botlet-path PATH', 'Add an absolute path that will be searched for botlets') do |path|
+        options[:botlet_paths] << path
+      end
+
+      # not really good if opts contains child arrays or hashes, in that case use a config file
+      opts.on('-x', '--connector NAME,[PATH],[OPT1=VAL1,OPT2=VAL2...]', Array, 'Add a connector to load') do |c|
+        connector = { :name => c.shift,
+                      :path => c.shift,
+                      :opts => Hash[c.collect {|pair| pair.split('=') }] }
+        options[:connectors] << connector
+      end
+
+      opts.on_tail('-h', '--help', 'Display this screen' ) do
+        puts opts
+        exit
+      end
+    end.parse!
+
+    if options[:config] && File.exists?(options[:config])
+      config = YAML.load_file(options[:config])
+
+      options[:connectors]   |= config[:connectors] if config[:connectors]
+      options[:botlet_paths] |= config[:botlet_paths] if config[:botlet_paths]
+      options[:name]         ||= config[:name]
+    end
+
+    options[:connectors].each do |conn|
+      next if conn[:path].start_with?("/") # do nothing if this is an absolute path
+
+      if (conn[:path].include? File::PATH_SEPARATOR)
+        conn[:path].prepend("./") unless conn[:path].start_with?('.')
+        conn[:path] = File.expand_path(File.join(File.dirname(__FILE__), conn[:path]))
+      else
+        conn[:path] = File.join(DEFAULT_CONNECTOR_PATH, conn[:path])
+      end
+    end
+
+    options
+  end
+end
+
+options = ConfigModule.config
+Supabot::Robot.new(options[:connectors], options[:name]).run

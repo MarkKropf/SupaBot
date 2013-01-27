@@ -1,0 +1,10 @@
+:name:
+:botlet_paths:
+:connectors:
+  - :name: Irc
+    :path: irc.rb
+    :opts:
+      :host: chat.freenode.net
+      :port: 6667
+      :channels:
+        - '#supabot'
