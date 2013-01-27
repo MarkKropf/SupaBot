@@ -8,3 +8,8 @@
       :port: 6667
       :channels:
         - '#supabot'
+  - :name: Http
+    :path: http.rb
+    :opts:
+      :ip: 0.0.0.0
+      :port: 8080
