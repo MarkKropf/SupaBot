@@ -12,11 +12,12 @@ module Supabot
 
     attr_reader :name, :logger
 
-    def initialize(connectors, name=nil, logger=nil)
-      @name         = name || 'Cher'
-      @connectors   = []
-      @logger       = logger || Logger.new(STDOUT)
+    def initialize(connectors, botlet_paths, name=nil, logger=nil)
+      @name         = name         || 'Cher'
+      @botlet_paths = botlet_paths || []
+      @logger       = logger       || Logger.new(STDOUT)
       @logger.level = Logger::DEBUG
+      @connectors   = []
       @listeners    = []
 
       connectors.each { |c| load_connector(c[:path], c[:name], c[:opts]) }
@@ -88,7 +89,7 @@ module Supabot
           parent.const_get(child.to_sym)
         end
 
-        remove_from.instance_eval { remove_const to_remove if const_defined? to_remove }
+        remove_from.instance_eval { remove_const(to_remove) if const_defined?(to_remove) }
       end
 
       load_botlets
@@ -96,30 +97,37 @@ module Supabot
 
     private
 
-    def load_connector(connector_path, connector_name, opts={})
-      require connector_path
-      @connectors.push Supabot.const_get(connector_name).new self, opts
-    rescue => err
-      @logger.error "Failed to load #{connector_name} at #{connector_path} because: #{err.message}. Continuing anyways."
-    end
-
-    def load_botlets(path="#{File.dirname(__FILE__)}/supabot/botlets/")
-      Dir.foreach(File.absolute_path(path)) do |f|
-        file = File.join(path, f)
-        begin
-          existing_classes = ObjectSpace.each_object(Class).to_a
-          load file
-          new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
-
-          new_classes.keep_if { |k| k.included_modules.include? Supabot::Botlet }.each do |klass|
-            k = klass.new self
-            k.load
-          end
-        rescue => err
-          @logger.error "Failed to load botlet #{file} because: #{err.message}. Continuing anyways."
-        end if file.end_with? '.rb'
+      def load_connector(connector_path, connector_name, opts={})
+        require connector_path
+        @connectors.push Supabot.const_get(connector_name).new(self, opts)
+      rescue => err
+        @logger.error "Failed to load #{connector_name} at #{connector_path} because: #{err.message}. Continuing anyways."
       end
-    end
+
+      def load_botlets()
+       @botlet_paths.each { |p| load_botlets_from_path(p) }
+      end
+
+      def load_botlets_from_path(path)
+        Dir.foreach(path) do |f|
+          next unless f.end_with?('.rb')
+
+          file = File.join(path, f)
+
+          begin
+            existing_classes = ObjectSpace.each_object(Class).to_a
+            load file
+            new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
+
+            new_classes.keep_if { |k| k.included_modules.include? Supabot::Botlet }.each do |klass|
+              k = klass.new(self)
+              k.load
+            end
+          rescue => err
+            @logger.error "Failed to load botlet #{file} because: #{err.message}. Continuing anyways."
+          end
+        end
+      end
 
   end
 end

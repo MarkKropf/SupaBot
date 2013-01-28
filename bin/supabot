@@ -28,13 +28,13 @@ module ConfigModule # just a namespace to shove the config stuff into
       end
 
       opts.on('-b', '--botlet-path PATH', 'Add an absolute path that will be searched for botlets') do |path|
-        options[:botlet_paths] << path
+        options[:botlet_paths] << File.expand_path(path)
       end
 
       # not really good if opts contains child arrays or hashes, in that case use a config file
       opts.on('-x', '--connector NAME,[PATH],[OPT1=VAL1,OPT2=VAL2...]', Array, 'Add a connector to load') do |c|
         connector = { :name => c.shift,
-                      :path => c.shift,
+                      :path => get_full_connector_path(c.shift),
                       :opts => Hash[c.collect {|pair| pair.split('=') }] }
         options[:connectors] << connector
       end
@@ -46,27 +46,34 @@ module ConfigModule # just a namespace to shove the config stuff into
     end.parse!
 
     if options[:config] && File.exists?(options[:config])
-      config = YAML.load_file(options[:config])
+      config     = YAML.load_file(options[:config])
+      config_dir = File.dirname(options[:config])
 
-      options[:connectors]   |= config[:connectors] if config[:connectors]
-      options[:botlet_paths] |= config[:botlet_paths] if config[:botlet_paths]
+      config[:connectors]   ||= []
+      config[:botlet_paths] ||= []
+
+      config[:connectors].each { |c| c[:path] = get_full_connector_path(c[:path], config_dir) }
+      config[:botlet_paths].map! { |p| File.expand_path(p, config_dir) }
+
+      options[:connectors]   |= config[:connectors]
+      options[:botlet_paths] |= config[:botlet_paths]
       options[:name]         ||= config[:name]
-    end
-
-    options[:connectors].each do |conn|
-      next if conn[:path].start_with?("/") # do nothing if this is an absolute path
-
-      if (conn[:path].include? File::PATH_SEPARATOR)
-        conn[:path].prepend("./") unless conn[:path].start_with?('.')
-        conn[:path] = File.expand_path(File.join(File.dirname(__FILE__), conn[:path]))
-      else
-        conn[:path] = File.join(DEFAULT_CONNECTOR_PATH, conn[:path])
-      end
     end
 
     options
   end
+
+  def self.get_full_connector_path(path, relative=nil)
+    return if path.start_with?("/") # do nothing if this is an absolute path
+
+    if (path.include?(File::SEPARATOR))
+      path.prepend("./") unless path.start_with?('.')
+      return File.expand_path(path, relative)
+    else
+      return File.join(DEFAULT_CONNECTOR_PATH, path)
+    end
+  end
 end
 
 options = ConfigModule.config
-Supabot::Robot.new(options[:connectors], options[:name]).run
+Supabot::Robot.new(options[:connectors], options[:botlet_paths], options[:name]).run
