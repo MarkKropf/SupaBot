@@ -1,3 +1,4 @@
 vendor/*
 .rbx/*
 Gemfile.lock
+bin/config.yml

@@ -1,5 +1,5 @@
-:name:
-:botlet_paths:
+:name: NewName
+:botlet_paths: ~/custom_path/
 :connectors:
   - :name: Irc
     :path: irc.rb
@@ -7,7 +7,8 @@
       :host: chat.freenode.net
       :port: 6667
       :channels:
-        - '#supabot'
+        - '#channel1'
+        - '#channel2'
   - :name: Http
     :path: http.rb
     :opts:
