@@ -46,11 +46,8 @@ module ConfigModule # just a namespace to shove the config stuff into
       end
     end.parse!
 
-    if not options[:config] && File.exists?(DEFAULT_CONFIG_FILE)
-      options[:config] = DEFAULT_CONFIG_FILE
-    end
-
-    if options[:config] && File.exists?(options[:config])
+    options[:config] = DEFAULT_CONFIG_FILE unless options[:config]
+    if File.exists?(options[:config])
       config     = YAML.load_file(options[:config])
       config_dir = File.dirname(options[:config])
 
