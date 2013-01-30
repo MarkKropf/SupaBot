@@ -59,6 +59,11 @@ module Supabot
         super text, user, connector
         @http_response = response
       end
+
+      def ignored
+        http_response.status = 400
+        http_response.send_response
+      end
     end
 
   end
