@@ -41,8 +41,9 @@ module Supabot
     def receive(message)
       @listeners.each do |l|
         l.call message
-        break if message.done
+        break if message.done?
       end
+      message.ignored if message.unheard?
     end
 
     def send(message)
