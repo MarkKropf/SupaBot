@@ -50,5 +50,11 @@ describe Supabot::Message do
       expect { message.ignored }.to_not raise_error
     end
   end
+end
 
+describe Supabot::TextMessage do
+  context "when creating" do
+    subject { described_class.new("the text",nil,nil) }
+    its(:text) { should eq "the text" }
+  end
 end
