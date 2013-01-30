@@ -14,7 +14,7 @@ module Supabot
       end
 
       @robot.respond /die$/i do |response|
-        response.send "Peace out homeys"
+        response.send "Peace out homies"
         EM.next_tick { exit }
       end
 
