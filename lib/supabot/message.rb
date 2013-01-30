@@ -8,6 +8,10 @@ module Supabot
       @connector = connector
       @done      = false
     end
+
+    def finish
+      @done = true
+    end
   end
 
   class TextMessage
