@@ -39,7 +39,10 @@ module Supabot
     end
 
     def receive(message)
-      @listeners.each { |l| l.call message }
+      @listeners.each do |l|
+        l.call message
+        break if message.done
+      end
     end
 
     def send(message)
